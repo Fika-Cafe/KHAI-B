@@ -2,8 +2,11 @@
   "name": "khai",
   "version": "1.0.0",
   "description": "This is a backend development for a Hub, about centralize alls company information",
-  "main": "index.js",
+  "main": "/src/server/index.js",
   "scripts": {
+    "dev": "nodemon src/server/index.js",
+    "start": "node src/server/index.js",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -13,9 +16,10 @@
   ],
   "author": "Jimenez Delgado Leonardo Sebastian",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "@prisma/client": "^7.2.0",
+    "@supabase/supabase-js": "^2.89.0",
     "cors": "^2.8.5",
     "express": "^5.2.1"
   },
