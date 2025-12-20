@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 
 //rutas
-
+import profileRoutes from "../routes/profile/profiel.js";
 
 const app = express();
 app.set("port", process.env.PORT || 3000);
@@ -26,7 +26,7 @@ app.use("/serverAlive", (req, res) => {
 });
 
 //rutas
-
+app.use("/profile", profileRoutes);
 
 // Inicializacion del server
 app.listen(app.get("port"), () => {
