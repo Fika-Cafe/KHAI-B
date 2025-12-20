@@ -4,10 +4,7 @@ import { check, validationResult } from "express-validator";
 const getProfile = async (req, res) => {
   const { userId } = req.body;
 
-  await check("userId")
-    .notEmpty()
-    .withMessage("El ID de usuario es obligatorio.")
-    .run(req);
+  await check("userId").notEmpty().withMessage("El ID de usuario es obligatorio.").run(req);
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -17,6 +14,13 @@ const getProfile = async (req, res) => {
   try {
     const profile = await prisma.profiles.findUnique({
       where: { id: userId },
+      include: {
+        user_roles: {
+          include: {
+            roles: true,
+          },
+        },
+      },
     });
 
     if (!profile) {
