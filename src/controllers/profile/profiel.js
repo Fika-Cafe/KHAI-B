@@ -20,6 +20,7 @@ const getProfile = async (req, res) => {
             roles: true,
           },
         },
+        serch_history: true,
       },
     });
 
