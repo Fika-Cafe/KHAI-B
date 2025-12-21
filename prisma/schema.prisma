@@ -412,11 +412,48 @@ model users {
 
 // -----------------------------  SCHEMAS DE TRABAJO PUBLIC -----------------------------
 model profiles {
-  id         String       @id @db.Uuid
-  name       String?
-  created_at DateTime?    @default(now()) @db.Timestamptz(6)
-  users      users        @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  user_roles user_roles[]
+  id                String              @id @db.Uuid
+  name              String
+  created_at        DateTime            @default(now()) @db.Timestamptz(6)
+  users             users               @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user_roles        user_roles[]
+  serch_history     serch_history[]
+  team_members      team_members[]
+  documents_history documents_history[]
+  querys            querys[]
+
+  @@unique([name])
+  @@schema("public")
+}
+
+enum team_role {
+  owner
+  admin
+  member
+
+  @@schema("public")
+}
+
+model team_members {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  team_id    String    @db.Uuid
+  profile_id String    @db.Uuid
+  role       team_role @default(member)
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+
+  team    team     @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  profile profiles @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@unique([team_id, profile_id])
+  @@schema("public")
+}
+
+model team {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String   @unique
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  members team_members[]
 
   @@schema("public")
 }
@@ -424,21 +461,92 @@ model profiles {
 model roles {
   id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name       String       @unique
-  created_at DateTime?    @default(now()) @db.Timestamptz(6)
+  created_at DateTime     @default(now()) @db.Timestamptz(6)
   user_roles user_roles[]
 
   @@schema("public")
 }
 
 model user_roles {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id    String?   @db.Uuid
-  role_id    String?   @default("c51d3931-4a7c-46a1-a910-7157854c1d44") @db.Uuid
-  created_at DateTime? @default(now()) @db.Timestamptz(6)
-  roles      roles?    @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  profiles   profiles? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  role_id    String   @default("c51d3931-4a7c-46a1-a910-7157854c1d44") @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  roles      roles    @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  profiles   profiles @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([user_id, role_id])
+  @@schema("public")
+}
+
+enum type {
+  document
+  enlace
+
+  @@schema("public")
+}
+
+model documents {
+  id               String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title            String
+  content          String
+  profile_id       String              @db.Uuid
+  created_at       DateTime            @default(now()) @db.Timestamptz(6)
+  documentsEnlaces documents_enlaces[]
+
+  @@schema("public")
+}
+
+model enlaces {
+  id               String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title            String
+  url              String
+  profile_id       String              @db.Uuid
+  created_at       DateTime            @default(now()) @db.Timestamptz(6)
+  documentsEnlaces documents_enlaces[]
+
+  @@schema("public")
+}
+
+model documents_enlaces {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type         type       @default(document)
+  documents_id String?    @db.Uuid
+  enlaces_id   String?    @db.Uuid
+  documents    documents? @relation(fields: [documents_id], references: [id])
+  enlaces      enlaces?   @relation(fields: [enlaces_id], references: [id])
+  created_at   DateTime   @default(now()) @db.Timestamptz(6)
+
+  @@schema("public")
+}
+
+model serch_history {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profiel_id String   @db.Uuid
+  query      String
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  profile    profiles @relation(fields: [profiel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("public")
+}
+
+model querys {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  query      String
+  profiel_id String   @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  profile    profiles @relation(fields: [profiel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("public")
+}
+
+model documents_history {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  document_id String   @db.Uuid
+  profiel_id  String   @db.Uuid
+  profile     profiles @relation(fields: [profiel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
   @@schema("public")
 }
 
