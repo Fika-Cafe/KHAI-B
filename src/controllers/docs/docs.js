@@ -141,4 +141,15 @@ const getMyDocument = async (req, res) => {
   return res.status(200).json({ document });
 };
 
-export { uploadDocument, uploadLink, getMyDocument };
+const getMyLinks = async (req, res) => {
+  const { userId } = req.params;
+  const links = await prisma.links.findMany({
+    where: { profile_id: userId },
+    include: {
+      profile: true,
+    },
+  });
+  return res.status(200).json({ links });
+};
+
+export { uploadDocument, uploadLink, getMyDocument, getMyLinks };
