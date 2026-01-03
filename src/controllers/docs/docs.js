@@ -1,5 +1,5 @@
 import prisma from "../../../prisma/prismaClient.js";
-import { param, validationResult } from "express-validator";
+import { check, param, validationResult } from "express-validator";
 import crypto from "crypto";
 
 const uploadDocument = async (req, res) => {
@@ -95,6 +95,41 @@ const uploadDocument = async (req, res) => {
   }
 };
 
+const uploadLink = async (req, res) => {
+  const { userId } = req.params;
+  const { title, url } = req.body;
+
+  await param("userId").notEmpty().withMessage("userId is required").run(req);
+  await check("title").notEmpty().withMessage("title is required").run(req);
+  await check("url").isURL().withMessage("url is not a valid URL").run(req);
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res
+      .status(400)
+      .json({ message: "Validation failed", errors: errors.array() });
+  }
+
+  try {
+    const links = await prisma.links.create({
+      data: {
+        url: url,
+        title: title,
+        profile_id: userId,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res
+      .status(500)
+      .json({ message: "Error al subir el enlace", details: error.message });
+  }
+
+  return res.status(200).json({ message: "Enlace subido correctamente" });
+};
+
 const getMyDocument = async (req, res) => {
   const { userId } = req.params;
   const document = await prisma.documents.findMany({
@@ -106,4 +141,4 @@ const getMyDocument = async (req, res) => {
   return res.status(200).json({ document });
 };
 
-export { uploadDocument, getMyDocument };
+export { uploadDocument, uploadLink, getMyDocument };
