@@ -444,11 +444,12 @@ model team {
   name             String        @unique
   created_at       DateTime      @default(now()) @db.Timestamptz(6)
 
-  owner_id         String        @db.Uuid
+  owner_id         String        @db.Uuid @unique
   owner            profiles      @relation(fields: [owner_id], references: [id], onDelete: Cascade)
   
   members          team_members[]
 
+  @@index([owner_id])
   @@schema("public")
 }
 
