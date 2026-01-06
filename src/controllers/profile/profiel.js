@@ -41,8 +41,14 @@ const getProfile = async (req, res) => {
 const createProfile = async (req, res) => {
   const { userId, username, teamname, teamrole, teamid } = req.body;
 
-  await check("userId").isUUID().withMessage("El ID de usuario no es válido.").run(req);
-  await check("username").isString().withMessage("El nombre de usuario no es válido.").run(req);
+  await check("userId")
+    .isUUID()
+    .withMessage("El ID de usuario no es válido.")
+    .run(req);
+  await check("username")
+    .isString()
+    .withMessage("El nombre de usuario no es válido.")
+    .run(req);
 
   const errors = validationResult(req);
 
@@ -88,12 +94,14 @@ const createProfile = async (req, res) => {
       });
 
       if (!teamMember) {
-        return res.status(400).json({ error: "Error al crear el miembro del equipo." });
+        return res
+          .status(400)
+          .json({ error: "Error al crear el miembro del equipo." });
       }
     } else {
       const profile = await prisma.profiles.create({
         data: {
-          users: userId,
+          id: userId,
           name: username,
           permissions,
         },
@@ -102,6 +110,7 @@ const createProfile = async (req, res) => {
       if (!profile) {
         return res.status(400).json({ error: "Error al crear el perfil." });
       }
+
       const teamMember = await prisma.team_members.create({
         data: {
           team_id: teamid,
@@ -114,7 +123,7 @@ const createProfile = async (req, res) => {
           .json({ error: "Error al crear el miembro del equipo." });
       }
     }
-    return res.status(201).json({ message: "Perfil creado exitosamente."});
+    return res.status(201).json({ message: "Perfil creado exitosamente." });
   } catch (error) {
     console.error("Error al crear el perfil:", error);
     return res.status(500).json({ error: "Error interno del servidor." });
