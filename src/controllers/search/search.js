@@ -122,7 +122,7 @@ const getSearchLogs = async (req, res) => {
     const logs = await prisma.search_log.findMany({
       where: { profile_id: profileId },
       orderBy: { created_at: "desc" },
-      take: 1,
+      take: 8,
       include: {
         results: {
           include: {
