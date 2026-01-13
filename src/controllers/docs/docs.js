@@ -192,4 +192,26 @@ const getMyLinks = async (req, res) => {
   return res.status(200).json({ links });
 };
 
-export { uploadDocument, uploadLink, getMyDocument, getMyLinks };
+const getDocumentById = async (req, res) => {
+  const { documentId } = req.params;
+  try {
+    const document = await prisma.documents.findUnique({
+      where: { id: documentId },
+      include: {
+        profile: true,
+      },
+    });
+
+    if (!document) {
+      return res.status(404).json({ message: "Documento no encontrado" });
+    }
+
+    return res.status(200).json({ message: "Documento encontrado", document });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error al obtener el documento",
+    });
+  }
+};
+
+export { uploadDocument, uploadLink, getMyDocument, getMyLinks, getDocumentById };

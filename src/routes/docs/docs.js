@@ -5,6 +5,7 @@ import {
   uploadLink,
   getMyDocument,
   getMyLinks,
+  getDocumentById,
 } from "../../controllers/docs/docs.js";
 
 const upload = multer({
@@ -113,5 +114,25 @@ router.post("/uploadLink/:userId", uploadLink);
  *       401: { description: No autorizado }
  */
 router.get("/myLinks/:userId", getMyLinks);
+
+/**
+ * @openapi
+ * /docs/document/{documentId}:
+ *   get:
+ *     summary: Obtiene un documento por su ID
+ *     tags: [Docs]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: documentId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Documento encontrado }
+ *       404: { description: Documento no encontrado }
+ *       500: { description: Error al obtener el documento }
+ */
+router.get("/document/:documentId", getDocumentById);
 
 export default router;
