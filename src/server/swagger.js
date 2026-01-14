@@ -28,7 +28,7 @@ const options = {
     },
   },
   // Add JSDoc @openapi blocks inside your route handlers/controllers
-  apis: ["./src/routes/**/*.js"],
+  apis: ["./src/routes/**/*.js", "./src/server/index.js"],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

@@ -38,6 +38,16 @@ app.get("/api-docs.json", (req, res) => {
 });
 
 // PUBLIC
+/**
+ * @openapi
+ * /serverAlive:
+ *   get:
+ *     summary: Verifica que el servidor está disponible
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Respuesta básica de salud
+ */
 app.use("/serverAlive", (req, res) => {
   res.status(200).json({ message: `Welcome 1,000,000` });
 });

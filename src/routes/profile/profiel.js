@@ -9,12 +9,18 @@ const router = express.Router();
 
 /**
  * @openapi
- * /profile/myProfile:
+ * /profile/myProfile/{userId}:
  *   get:
  *     summary: Obtiene el perfil del usuario autenticado
  *     tags: [Profile]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Perfil encontrado
@@ -51,7 +57,7 @@ router.post("/createProfile", createProfile);
 /**
  * @openapi
  * /profile/verifyProfile/{userId}:
- *   post:
+ *   get:
  *     summary: Verifica el perfil del usuario
  *     tags: [Profile]
  *     security:
