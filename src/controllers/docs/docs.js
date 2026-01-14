@@ -174,7 +174,11 @@ const getMyDocument = async (req, res) => {
   const { userId } = req.params;
   const document = await prisma.documents.findMany({
     where: { profile_id: userId },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      created_at: true,
+      count: true,
       profile: true,
     },
   });
