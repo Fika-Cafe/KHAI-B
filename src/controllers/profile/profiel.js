@@ -4,10 +4,7 @@ import prisma from "../../../prisma/prismaClient.js";
 const getProfile = async (req, res) => {
   const { userId } = req.params;
 
-  await check("userId")
-    .isUUID()
-    .withMessage("El ID de usuario no es válido.")
-    .run(req);
+  await check("userId").isUUID().withMessage("User ID is not valid.").run(req);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -22,26 +19,23 @@ const getProfile = async (req, res) => {
     });
 
     if (!profile) {
-      return res.status(404).json({ error: "Perfil no encontrado." });
+      return res.status(404).json({ error: "Profile not found." });
     }
 
     return res.status(200).json(profile);
   } catch (error) {
-    console.error("Error al obtener el perfil:", error);
-    return res.status(500).json({ error: "Error interno del servidor." });
+    console.error("Error fetching profile:", error);
+    return res.status(500).json({ error: "Internal server error." });
   }
 };
 
 const createProfile = async (req, res) => {
   const { userId, username, teamname, teamrole, teamid } = req.body;
 
-  await check("userId")
-    .isUUID()
-    .withMessage("El ID de usuario no es válido.")
-    .run(req);
+  await check("userId").isUUID().withMessage("User ID is not valid.").run(req);
   await check("username")
     .isString()
-    .withMessage("El nombre de usuario no es válido.")
+    .withMessage("Username is not valid.")
     .run(req);
 
   const errors = validationResult(req);
@@ -65,7 +59,7 @@ const createProfile = async (req, res) => {
       });
 
       if (!profile) {
-        return res.status(400).json({ error: "Error al crear el perfil." });
+        return res.status(400).json({ error: "Error creating profile." });
       }
 
       const team = await prisma.team.create({
@@ -76,7 +70,7 @@ const createProfile = async (req, res) => {
       });
 
       if (!team) {
-        return res.status(400).json({ error: "Error al crear el equipo." });
+        return res.status(400).json({ error: "Error creating team." });
       }
 
       const teamMember = await prisma.team_members.create({
@@ -88,9 +82,7 @@ const createProfile = async (req, res) => {
       });
 
       if (!teamMember) {
-        return res
-          .status(400)
-          .json({ error: "Error al crear el miembro del equipo." });
+        return res.status(400).json({ error: "Error creating team member." });
       }
     } else {
       const profile = await prisma.profiles.create({
@@ -102,7 +94,7 @@ const createProfile = async (req, res) => {
       });
 
       if (!profile) {
-        return res.status(400).json({ error: "Error al crear el perfil." });
+        return res.status(400).json({ error: "Error creating profile." });
       }
 
       const teamMember = await prisma.team_members.create({
@@ -112,25 +104,20 @@ const createProfile = async (req, res) => {
         },
       });
       if (!teamMember) {
-        return res
-          .status(400)
-          .json({ error: "Error al crear el miembro del equipo." });
+        return res.status(400).json({ error: "Error creating team member." });
       }
     }
-    return res.status(201).json({ message: "Perfil creado exitosamente." });
+    return res.status(201).json({ message: "Profile created successfully." });
   } catch (error) {
-    console.error("Error al crear el perfil:", error);
-    return res.status(500).json({ error: "Error interno del servidor." });
+    console.error("Error creating profile:", error);
+    return res.status(500).json({ error: "Internal server error." });
   }
 };
 
 const profielVerification = async (req, res) => {
   const { userId } = req.params;
 
-  await check("userId")
-    .isUUID()
-    .withMessage("El ID de usuario no es válido.")
-    .run(req);
+  await check("userId").isUUID().withMessage("User ID is not valid.").run(req);
 
   const errors = validationResult(req);
 
@@ -148,16 +135,18 @@ const profielVerification = async (req, res) => {
             team: true,
           },
         },
-      }
+      },
     });
 
     if (!profile) {
-      return res.status(404).json({ error: "Perfil no encontrado." });
+      return res.status(404).json({ error: "Profile not found." });
     }
 
-    return res.status(200).json({ message: "Perfil verificado exitosamente.", data: profile });
+    return res
+      .status(200)
+      .json({ message: "Profile verified successfully.", data: profile });
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor." });
+    return res.status(500).json({ error: "Internal server error." });
   }
 };
 

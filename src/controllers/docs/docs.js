@@ -76,7 +76,7 @@ const uploadDocument = async (req, res) => {
 
     if (!extractedText) {
       return res.status(422).json({
-        message: "No se pudo extraer texto del documento",
+        message: "Could not extract text from the document",
       });
     }
 
@@ -119,7 +119,7 @@ const uploadDocument = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: "Documento subido correctamente",
+      message: "Document uploaded successfully",
       chunkCount: chunks.length,
     });
   } catch (error) {
@@ -131,7 +131,7 @@ const uploadDocument = async (req, res) => {
 
     return res
       .status(500)
-      .json({ message: "Error al subir el documento", details: error.message });
+      .json({ message: "Error uploading document", details: error.message });
   }
 };
 
@@ -164,10 +164,10 @@ const uploadLink = async (req, res) => {
 
     return res
       .status(500)
-      .json({ message: "Error al subir el enlace", details: error.message });
+      .json({ message: "Error uploading link", details: error.message });
   }
 
-  return res.status(200).json({ message: "Enlace subido correctamente" });
+  return res.status(200).json({ message: "Link uploaded successfully" });
 };
 
 const getMyDocument = async (req, res) => {
@@ -210,15 +210,21 @@ const getDocumentById = async (req, res) => {
     });
 
     if (!document) {
-      return res.status(404).json({ message: "Documento no encontrado" });
+      return res.status(404).json({ message: "Document not found" });
     }
 
-    return res.status(200).json({ message: "Documento encontrado", document });
+    return res.status(200).json({ message: "Document found", document });
   } catch (error) {
     return res.status(500).json({
-      message: "Error al obtener el documento",
+      message: "Error fetching document",
     });
   }
 };
 
-export { uploadDocument, uploadLink, getMyDocument, getMyLinks, getDocumentById };
+export {
+  uploadDocument,
+  uploadLink,
+  getMyDocument,
+  getMyLinks,
+  getDocumentById,
+};

@@ -22,14 +22,14 @@ const teamMembers = async (req, res) => {
     });
 
     if (!team) {
-      return res.status(404).json({ message: "Equipo no encontrado" });
+      return res.status(404).json({ message: "Team not found" });
     }
 
-    return res.status(200).json({ message: "Equipo encontrado", team });
+    return res.status(200).json({ message: "Team found", team });
   } catch (error) {
     return res
       .status(500)
-      .json({ message: "Error al buscar el equipo", details: error.message });
+      .json({ message: "Error fetching team", details: error.message });
   }
 };
 

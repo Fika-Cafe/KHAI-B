@@ -3,10 +3,7 @@ import { check, validationResult } from "express-validator";
 
 const recentDocuments = async (req, res) => {
   const { userId } = req.params;
-  await check("userId")
-    .isUUID()
-    .withMessage("El ID de usuario no es válido.")
-    .run(req);
+  await check("userId").isUUID().withMessage("User ID is not valid.").run(req);
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -18,7 +15,7 @@ const recentDocuments = async (req, res) => {
     });
 
     if (!profile) {
-      return res.status(404).json({ message: "Perfil no valido." });
+      return res.status(404).json({ message: "Invalid profile." });
     }
 
     const logs = await prisma.search_log.findMany({
@@ -47,14 +44,14 @@ const recentDocuments = async (req, res) => {
     const links = logs.map((log) => log.results.map((result) => result.links));
 
     return res.status(200).json({
-      message: "Documentos recientes obtenidos correctamente",
+      message: "Recent documents fetched successfully",
       documents,
       links,
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      message: "Error al obtener los documentos recientes.",
+      message: "Error fetching recent documents.",
       error: error,
     });
   }
@@ -62,10 +59,7 @@ const recentDocuments = async (req, res) => {
 
 const mostViewedDocuments = async (req, res) => {
   const { userId } = req.params;
-  await check("userId")
-    .isUUID()
-    .withMessage("El ID de usuario no es válido.")
-    .run(req);
+  await check("userId").isUUID().withMessage("User ID is not valid.").run(req);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -76,7 +70,7 @@ const mostViewedDocuments = async (req, res) => {
     });
 
     if (!profile) {
-      return res.status(404).json({ message: "Perfil no valido." });
+      return res.status(404).json({ message: "Invalid profile." });
     }
 
     const documents = await prisma.documents.findMany({
@@ -95,12 +89,12 @@ const mostViewedDocuments = async (req, res) => {
       take: 8,
     });
     return res.status(200).json({
-      message: "Documentos más vistos obtenidos correctamente",
+      message: "Most-viewed documents fetched successfully",
       documents,
     });
   } catch (error) {
     return res.status(500).json({
-      message: "Error al obtener los documentos más vistos.",
+      message: "Error fetching most-viewed documents.",
       error: error,
     });
   }
