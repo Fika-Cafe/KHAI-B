@@ -1,5 +1,5 @@
 # Stage 1: Dependencies
-FROM node:alpine AS dependencies
+FROM node:20.19.5-alpine AS dependencies
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN npm ci --only=production && npm cache clean --force
 RUN npm install -g prisma@^7.2.0
 
 # Stage 2: Build
-FROM node:alpine AS build
+FROM node:20.19.5-alpine AS build
 
 WORKDIR /app
 
@@ -28,7 +28,7 @@ RUN npm ci
 RUN npx prisma generate
 
 # Stage 3: Production
-FROM node:alpine AS production
+FROM node:20.19.5-alpine AS production
 
 WORKDIR /app
 
