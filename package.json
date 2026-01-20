@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server/index.js",
     "dev": "nodemon src/server/index.js",
-    "prisma": "prisma"
+    "prisma": "prisma",
+    "postinstall": "prisma generate"
   },
   "keywords": [
     "Knowledge",
@@ -29,13 +30,13 @@
     "mammoth": "^1.11.0",
     "multer": "^2.0.2",
     "pdfreader": "^3.0.8",
+    "prisma": "^7.2.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
     "dotenv": "^17.2.3",
-    "nodemon": "^3.1.11",
-    "prisma": "^7.2.0"
+    "nodemon": "^3.1.11"
   }
 }
