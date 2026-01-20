@@ -6,7 +6,7 @@ const setAuthCookies = (res, session) => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.ENV === "production",
-    sameSite: "lax",
+    sameSite: "none",
     maxAge: expires_in ? expires_in * 1000 : undefined,
   };
 
