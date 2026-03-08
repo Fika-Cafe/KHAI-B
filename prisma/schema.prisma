@@ -23,18 +23,23 @@ model audit_log_entries {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model flow_state {
-  id                     String                @id @db.Uuid
-  user_id                String?               @db.Uuid
-  auth_code              String
-  code_challenge_method  code_challenge_method
-  code_challenge         String
+  id                     String                 @id @db.Uuid
+  user_id                String?                @db.Uuid
+  auth_code              String?
+  code_challenge_method  code_challenge_method?
+  code_challenge         String?
   provider_type          String
   provider_access_token  String?
   provider_refresh_token String?
-  created_at             DateTime?             @db.Timestamptz(6)
-  updated_at             DateTime?             @db.Timestamptz(6)
+  created_at             DateTime?              @db.Timestamptz(6)
+  updated_at             DateTime?              @db.Timestamptz(6)
   authentication_method  String
-  auth_code_issued_at    DateTime?             @db.Timestamptz(6)
+  auth_code_issued_at    DateTime?              @db.Timestamptz(6)
+  invite_token           String?
+  referrer               String?
+  oauth_client_state_id  String?                @db.Uuid
+  linking_target_id      String?                @db.Uuid
+  email_optional         Boolean                @default(false)
   saml_relay_states      saml_relay_states[]
 
   @@index([created_at(sort: Desc)])
@@ -168,21 +173,22 @@ model oauth_client_states {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model oauth_clients {
-  id                   String                  @id @db.Uuid
-  client_secret_hash   String?
-  registration_type    oauth_registration_type
-  redirect_uris        String
-  grant_types          String
-  client_name          String?
-  client_uri           String?
-  logo_uri             String?
-  created_at           DateTime                @default(now()) @db.Timestamptz(6)
-  updated_at           DateTime                @default(now()) @db.Timestamptz(6)
-  deleted_at           DateTime?               @db.Timestamptz(6)
-  client_type          oauth_client_type       @default(confidential)
-  oauth_authorizations oauth_authorizations[]
-  oauth_consents       oauth_consents[]
-  sessions             sessions[]
+  id                         String                  @id @db.Uuid
+  client_secret_hash         String?
+  registration_type          oauth_registration_type
+  redirect_uris              String
+  grant_types                String
+  client_name                String?
+  client_uri                 String?
+  logo_uri                   String?
+  created_at                 DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime                @default(now()) @db.Timestamptz(6)
+  deleted_at                 DateTime?               @db.Timestamptz(6)
+  client_type                oauth_client_type       @default(confidential)
+  token_endpoint_auth_method String
+  oauth_authorizations       oauth_authorizations[]
+  oauth_consents             oauth_consents[]
+  sessions                   sessions[]
 
   @@index([deleted_at])
   @@schema("auth")
@@ -411,115 +417,143 @@ model users {
 }
 
 model profiles {
-  id          String         @id @db.Uuid
-  name        String
-  created_at  DateTime       @default(now()) @db.Timestamptz(6)
-  permissions permissions    @default(Reader)
-  documents   documents[]
-  links       links[]
-  users       users          @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  search_logs search_log[]
-  team        team?
-  memberships team_members[]
+  id             String           @id @db.Uuid
+  name           String?
+  created_at     DateTime?        @default(now()) @db.Timestamptz(6)
+  chats          chats[]
+  document_views document_views[]
+  users          users            @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  search_history search_history[]
+  user_roles     user_roles[]
 
-  @@schema("public")
-}
-
-model team {
-  id         String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name       String         @unique
-  created_at DateTime       @default(now()) @db.Timestamptz(6)
-  owner_id   String         @unique @db.Uuid
-  owner      profiles       @relation(fields: [owner_id], references: [id], onDelete: Cascade)
-  members    team_members[]
-
-  @@index([owner_id])
-  @@schema("public")
-}
-
-model team_members {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  team_id    String    @db.Uuid
-  profile_id String    @db.Uuid
-  role       team_role @default(Member)
-  created_at DateTime  @default(now()) @db.Timestamptz(6)
-  profile    profiles  @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  team       team      @relation(fields: [team_id], references: [id], onDelete: Cascade)
-
-  @@unique([team_id, profile_id])
   @@schema("public")
 }
 
 model documents {
   id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title          String
-  content        String
-  profile_id     String           @db.Uuid
-  created_at     DateTime         @default(now()) @db.Timestamptz(6)
-  content_sha    String?          @unique
-  file_size      Int
-  source         String?
-  count          Int              @default(0)
-  
-  chunks         document_chunk[]
-  profile        profiles         @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  search_results search_result[]
+  url            String
+  access_level   String?          @default("private")
+  views_count    Int?             @default(0)
+  created_at     DateTime?        @default(now()) @db.Timestamptz(6)
+  document_roles document_roles[]
+  document_views document_views[]
 
-  @@index([profile_id, created_at])
   @@schema("public")
 }
 
-model document_chunk {
-  id          String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  document_id String                   @db.Uuid
-  chunk_index Int
-  content     String
-  token_count Int?
-  created_at  DateTime                 @default(now()) @db.Timestamptz(6)
-  content_tsv Unsupported("tsvector")? @default(dbgenerated("to_tsvector('spanish'::regconfig, content)"))
-  document    documents                @relation(fields: [document_id], references: [id], onDelete: Cascade)
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model custom_oauth_providers {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider_type         String
+  identifier            String    @unique
+  name                  String
+  client_id             String
+  client_secret         String
+  acceptable_client_ids String[]  @default([])
+  scopes                String[]  @default([])
+  pkce_enabled          Boolean   @default(true)
+  attribute_mapping     Json      @default("{}")
+  authorization_params  Json      @default("{}")
+  enabled               Boolean   @default(true)
+  email_optional        Boolean   @default(false)
+  issuer                String?
+  discovery_url         String?
+  skip_nonce_check      Boolean   @default(false)
+  cached_discovery      Json?
+  discovery_cached_at   DateTime? @db.Timestamptz(6)
+  authorization_url     String?
+  token_url             String?
+  userinfo_url          String?
+  jwks_uri              String?
+  created_at            DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime  @default(now()) @db.Timestamptz(6)
 
-  @@index([document_id, chunk_index])
-  @@index([content_tsv], map: "idx_document_chunk_tsv", type: Gin)
+  @@index([created_at])
+  @@index([enabled])
+  @@index([identifier])
+  @@index([provider_type])
+  @@schema("auth")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model chat_messages {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chat_id    String?   @db.Uuid
+  sender     String
+  content    String
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  chats      chats?    @relation(fields: [chat_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
   @@schema("public")
 }
 
-model links {
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model chats {
   id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title         String
-  url           String
-  profile_id    String          @db.Uuid
-  created_at    DateTime        @default(now()) @db.Timestamptz(6)
-  profile       profiles        @relation(fields: [profile_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  searchResults search_result[]
+  user_id       String?         @db.Uuid
+  created_at    DateTime?       @default(now()) @db.Timestamptz(6)
+  chat_messages chat_messages[]
+  profiles      profiles?       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([profile_id])
   @@schema("public")
 }
 
-model search_log {
-  id         String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  profile_id String          @db.Uuid
-  query      String
-  created_at DateTime        @default(now())
-  profile    profiles        @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  results    search_result[]
+model document_roles {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  document_id String?    @db.Uuid
+  role_id     String?    @db.Uuid
+  created_at  DateTime?  @default(now()) @db.Timestamptz(6)
+  documents   documents? @relation(fields: [document_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  roles       roles?     @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([profile_id])
+  @@unique([document_id, role_id])
   @@schema("public")
 }
 
-model search_result {
-  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  search_id   String      @db.Uuid
-  result_type result_type
-  document_id String?     @db.Uuid
-  links_id    String?     @db.Uuid
-  document    documents?  @relation(fields: [document_id], references: [id])
-  links       links?      @relation(fields: [links_id], references: [id])
-  search      search_log  @relation(fields: [search_id], references: [id], onDelete: Cascade)
+model document_views {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String?    @db.Uuid
+  document_id String?    @db.Uuid
+  viewed_at   DateTime?  @default(now()) @db.Timestamptz(6)
+  documents   documents? @relation(fields: [document_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  profiles    profiles?  @relation(fields: [user_id], references: [id], onUpdate: NoAction)
 
-  @@index([search_id])
+  @@schema("public")
+}
+
+model roles {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String           @unique
+  created_at     DateTime?        @default(now()) @db.Timestamptz(6)
+  document_roles document_roles[]
+  user_roles     user_roles[]
+
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model search_history {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String?   @db.Uuid
+  query         String
+  results_count Int?
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  profiles      profiles? @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+
+  @@schema("public")
+}
+
+model user_roles {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String?   @db.Uuid
+  role_id    String?   @db.Uuid
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  roles      roles?    @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  profiles   profiles? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, role_id])
   @@schema("public")
 }
 
